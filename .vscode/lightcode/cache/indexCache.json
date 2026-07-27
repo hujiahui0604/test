@@ -1,0 +1,14 @@
+{
+  "cacheVersion": "v1",
+  "localModules": [
+    {
+      "modulePath": "e:\\test",
+      "moduleName": "test",
+      "depLocalModulePaths": [],
+      "depRemoteModulePaths": []
+    }
+  ],
+  "remoteModules": [],
+  "fileIndexes": {},
+  "files": []
+}
