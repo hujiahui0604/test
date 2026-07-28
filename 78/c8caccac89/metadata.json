@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "78c8caccac89",
+  "strategy": "manual-commit",
+  "branch": "master",
+  "checkpoints_count": 15,
+  "files_touched": [
+    "docs/superpowers/specs/2026-07-28-ai-coding-design.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/78/c8caccac89/0/metadata.json",
+      "transcript": "/78/c8caccac89/0/full.jsonl",
+      "compact_transcript": "/78/c8caccac89/0/transcript.jsonl",
+      "content_hash": "/78/c8caccac89/0/content_hash.txt",
+      "prompt": "/78/c8caccac89/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28925383,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 92930,
+    "api_call_count": 320
+  }
+}
