@@ -1,0 +1,31 @@
+{
+  "story_num": "202607011449",
+  "story_name": "市价指令操作级别为空时缺少提示",
+  "story_description": "【前置条件】: 开启系统参数10128-市价指令不允许设置操作级别，不限价指令指定有效成交量模式\n【操作步骤】: 交易所指令-期现货组合指令界面，下达市价指令，操作级别控件默认为空，执行指令下达时，指令下达不成功，系统也未给出提示\n【预期结果】: 应给出提示\"不支持操作级别为空\"",
+  "product_no": "CP-S000128-3.2",
+  "created_at": "2026-07-28T06:40:00",
+  "tasks": [
+    {
+      "taskNums": "T202607280001",
+      "name": "[缺陷]市价指令操作级别为空时缺少提示",
+      "description": "【前置条件】开启系统参数10128-市价指令不允许设置操作级别，不限价指令指定有效成交量模式\n【操作步骤】交易所指令-期现货组合指令界面，下达市价指令，操作级别控件默认为空，执行指令下达\n【预期结果】指令下达不成功时，系统应给出明确提示\"不支持操作级别为空\"\n【实际结果】指令下达不成功，系统未给出任何提示",
+      "reqNums": "202607011449",
+      "productId": "CP-S000128-3.2",
+      "moduleList": [{"moduleName": "UFT-组合指令", "moduleId": 10001}],
+      "type": 2,
+      "typeName": "开发",
+      "modifyStatus": 1,
+      "modifyStatusName": "进行中",
+      "createTime": "2026-07-28"
+    }
+  ],
+  "confirmed_fields": {
+    "versionNO": "",
+    "modifierNo": "",
+    "modifierName": "",
+    "projectNo": "",
+    "projectName": "",
+    "estimateWorkload": ""
+  },
+  "repo_path": "C:/Users/hspcadmin/Desktop/src"
+}
