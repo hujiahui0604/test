@@ -1,0 +1,26 @@
+# AI Coding 团队通用配置
+
+# 效能平台 MCP 配置
+mcp:
+  access_key: "${ACCESS_KEY}"
+  base_url: "https://dev.hundsun.com/openapi/apis/v1/mcp"
+
+# 代码仓库映射 (产品编号前缀 -> 仓库路径)
+repositories:
+  "CP-S000128":
+    path: "C:/Users/hspcadmin/Desktop/src"
+    name: "O32投资管理系统"
+    branch: "ai-coding-dev"
+  "CP-S000256":
+    path: "D:/repos/otrade"
+    name: "O-Trade"
+    branch: "develop"
+
+# 任务配置
+task:
+  max_parallel: 3
+
+# Git 配置
+git:
+  auto_push: false
+  commit_template: "AI Coding: {需求编号} - {任务描述}"
