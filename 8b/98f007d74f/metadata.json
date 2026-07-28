@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "8b98f007d74f",
+  "strategy": "manual-commit",
+  "branch": "master",
+  "checkpoints_count": 21,
+  "files_touched": [
+    "ai-coding/config.yaml",
+    "ai-coding/docs/USER_MANUAL.md",
+    "ai-coding/requirements.txt",
+    "ai-coding/src/cli.py",
+    "ai-coding/src/code_generator.py",
+    "ai-coding/src/code_reviewer.py",
+    "ai-coding/src/config.py",
+    "ai-coding/src/git_manager.py",
+    "ai-coding/src/task_splitter.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8b/98f007d74f/0/metadata.json",
+      "transcript": "/8b/98f007d74f/0/full.jsonl",
+      "compact_transcript": "/8b/98f007d74f/0/transcript.jsonl",
+      "content_hash": "/8b/98f007d74f/0/content_hash.txt",
+      "prompt": "/8b/98f007d74f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 21722634,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 70933,
+    "api_call_count": 256
+  }
+}
