@@ -191,3 +191,7 @@ This may or may not be related to the current task.</ide_selection>
 ---
 
 对
+
+---
+
+同步跟新打包文件，以供别人下载使用
