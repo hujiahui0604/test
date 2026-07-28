@@ -33,8 +33,13 @@ class Config:
         return {
             # 多厂商 LLM 配置
             "providers": {
-                "anthropic": {
+                # Claude Code 模式 - 使用当前会话模型，无需 API Key
+                "claude-code": {
                     "enabled": True,
+                    "model": "current-session"
+                },
+                "anthropic": {
+                    "enabled": False,
                     "api_key": os.environ.get("ANTHROPIC_API_KEY", ""),
                     "model": "claude-sonnet-4-6"
                 },
@@ -69,7 +74,8 @@ class Config:
                     "model": "glm-4"
                 }
             },
-            "active_provider": "anthropic",
+            # 默认使用 claude-code 模式（无需 API Key）
+            "active_provider": "claude-code",
             # MCP 配置
             "mcp": {
                 "access_key": os.environ.get("ACCESS_KEY", ""),
@@ -168,6 +174,10 @@ class Config:
         """检查厂商是否启用"""
         config = self.get_provider_config(provider)
         return config.get("enabled", False) if config else False
+
+    def is_claude_code_mode(self) -> bool:
+        """检查是否使用 Claude Code 模式（无需 API Key）"""
+        return self.get_active_provider() == "claude-code"
 
 
 # 全局配置实例

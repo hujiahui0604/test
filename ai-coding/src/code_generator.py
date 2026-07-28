@@ -106,6 +106,10 @@ class CodeGenerator:
 
     def _call_ai(self, prompt: str) -> str:
         """调用 AI 生成代码"""
+        # Claude Code 模式：生成可导入 Claude Code 的 prompt 文件
+        if self.provider == "claude-code":
+            return self._generate_claude_code_prompt(prompt)
+
         if not self.api_key:
             print(f"警告: {self.provider} API Key 未配置，使用模拟结果")
             return self._generate_mock_patch()
@@ -128,6 +132,42 @@ class CodeGenerator:
         else:
             print(f"未知厂商: {self.provider}，使用模拟结果")
             return self._generate_mock_patch()
+
+    def _generate_claude_code_prompt(self, prompt: str) -> str:
+        """生成 Claude Code Prompt 模式 - 输出可导入的 prompt 文件"""
+        # Claude Code 模式下，生成一个可以直接导入的 prompt
+        # 用户可以将这个 prompt 复制到 Claude Code 中执行
+        return f"""
+# AI Coding 任务 - 请在 Claude Code 中执行
+
+## 任务说明
+
+{prompt}
+
+## 执行步骤
+
+1. 理解上述需求
+2. 分析代码逻辑
+3. 生成代码修改
+4. 输出完整的修改后的代码或 diff
+
+## 输出格式
+
+请按以下格式输出：
+```
+## 修改后的代码
+```语言
+[完整的修改后代码]
+```
+
+或使用 diff 格式：
+```
+## Diff
+```diff
+[diff 内容]
+```
+```
+"""
 
     def _call_anthropic(self, prompt: str) -> str:
         """调用 Anthropic Claude API"""

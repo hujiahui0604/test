@@ -2,6 +2,8 @@
 import argparse
 import sys
 import os
+import json
+from datetime import datetime
 from pathlib import Path
 
 # 添加 src 目录到路径
@@ -14,6 +16,68 @@ from task_splitter import TaskSplitter
 from code_generator import CodeGenerator
 from code_reviewer import CodeReviewer
 from git_manager import GitManager
+
+
+def confirm_task_fields(story_num: str) -> dict:
+    """请求用户确认任务单字段"""
+    print("\n" + "=" * 50)
+    print("⚠️  请确认以下任务单字段（AI 无法自动生成）:")
+    print("=" * 50)
+
+    defaults = {
+        "versionNO": "ALGOV202301.02.013M08",
+        "modifierNo": "jinhx21900",
+        "modifierName": "金华学",
+        "projectNo": "2024120026",
+        "projectName": "O32产品维护-OTRADE项目",
+        "estimateWorkload": "4.0"
+    }
+
+    confirmed = {}
+    for field, default in defaults.items():
+        value = input(f"  {field} [{default}]: ").strip()
+        confirmed[field] = value if value else default
+
+    return confirmed
+
+
+def backup_tasks(story_num: str, story, tasks: list, confirmed_fields: dict, repo_path: str):
+    """本地备份任务单"""
+    # 创建备份目录
+    backup_dir = Path(repo_path).parent / "ai-coding" / "tasks"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+
+    # 生成备份文件名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_file = backup_dir / f"{story_num}_{timestamp}.json"
+
+    # 备份数据
+    backup_data = {
+        "story_num": story.story_num,
+        "story_name": story.story_name,
+        "product_no": story.product_no,
+        "created_at": datetime.now().isoformat(),
+        "tasks": [
+            {
+                "taskNums": t.task_id,
+                "name": t.task_name,
+                "description": t.description,
+                "edit_description": t.edit_description,
+                "file_path": t.file_path,
+                "language": getattr(t, 'language', 'cpp'),
+            }
+            for t in tasks
+        ],
+        "confirmed_fields": confirmed_fields,
+        "repo_path": repo_path
+    }
+
+    # 写入文件
+    with open(backup_file, 'w', encoding='utf-8') as f:
+        json.dump(backup_data, f, ensure_ascii=False, indent=2)
+
+    print(f"\n✓ 任务单已备份到: {backup_file}")
+    return str(backup_file)
 
 
 def main():
@@ -38,8 +102,9 @@ def main():
     parser.add_argument("--no-review", action="store_true", help="跳过代码审查")
     parser.add_argument("--no-push", action="store_true", help="只生成代码，不推送")
     parser.add_argument("--config", help="配置文件路径")
-    parser.add_argument("--provider", choices=["anthropic", "openai", "ali", "deepseek", "kimi", "minmax", "glm"],
+    parser.add_argument("--provider", choices=["claude-code", "anthropic", "openai", "ali", "deepseek", "kimi", "minmax", "glm"],
                         help="指定 LLM 厂商（覆盖配置文件）")
+    parser.add_argument("--no-confirm", action="store_true", help="跳过用户确认步骤")
 
     args = parser.parse_args()
 
@@ -53,15 +118,18 @@ def main():
     # 显示启动信息
     provider = config.get_active_provider()
     model = config.get_active_model()
+    is_claude_code = config.is_claude_code_mode()
     print(f"=== AI Coding 开始处理需求 {args.story_num} ===")
     print(f"  LLM 厂商: {provider} | 模型: {model}")
+    if is_claude_code:
+        print(f"  模式: Claude Code (无需 API Key)")
 
     # 1. 创建 MCP 客户端
-    print("\n[1/7] 创建 MCP 客户端...")
+    print("\n[1/8] 创建 MCP 客户端...")
     mcp_client = create_mcp_client(config)
 
     # 2. 读取需求
-    print("[2/7] 读取需求单...")
+    print("[2/8] 读取需求单...")
     story_reader = StoryReader(mcp_client)
     try:
         story = story_reader.read_story(args.story_num)
@@ -83,15 +151,31 @@ def main():
     print(f"  - 代码仓库: {repo_path}")
 
     # 3. 读取任务
-    print("[3/7] 读取关联任务...")
+    print("[3/8] 读取关联任务...")
     tasks = story_reader.read_tasks(story.product_no, args.story_num)
     print(f"  - 任务数: {len(tasks)}")
 
-    # 4. 拆分任务
-    print("[4/7] 拆分任务...")
+    # 4. 拆分任务 + 用户确认 + 备份
+    print("[4/8] 拆分任务 + 用户确认 + 备份...")
     splitter = TaskSplitter()
     split_tasks = splitter.split(story, tasks, repo_path)
     print(f"  - 拆分为 {len(split_tasks)} 个子任务")
+
+    # 4.1 用户确认字段（除非使用 --no-confirm）
+    if not args.no_confirm:
+        confirmed_fields = confirm_task_fields(args.story_num)
+    else:
+        confirmed_fields = {
+            "versionNO": "ALGOV202301.02.013M08",
+            "modifierNo": "jinhx21900",
+            "modifierName": "金华学",
+            "projectNo": "2024120026",
+            "projectName": "O32产品维护-OTRADE项目",
+            "estimateWorkload": "4.0"
+        }
+
+    # 4.2 本地备份任务单
+    backup_file = backup_tasks(args.story_num, story, split_tasks, confirmed_fields, repo_path)
 
     if args.dry_run:
         print("\n=== 预览模式 ===")
@@ -100,7 +184,7 @@ def main():
         return 0
 
     # 5. 生成代码
-    print(f"[5/7] 生成代码 (厂商: {provider})...")
+    print(f"[5/8] 生成代码 (厂商: {provider})...")
     generator = CodeGenerator(repo_path, config)
     generated_codes = []
     success_count = 0
@@ -116,7 +200,7 @@ def main():
 
     # 6. 代码审查
     if not args.no_review:
-        print("[6/7] 代码审查...")
+        print("[6/8] 代码审查...")
         reviewer = CodeReviewer()
         for code in generated_codes:
             result = reviewer.review(code)
@@ -124,7 +208,7 @@ def main():
 
     # 7. Git 推送
     if not args.no_push:
-        print("[7/7] Git 推送...")
+        print("[7/8] Git 推送...")
         git_manager = GitManager(repo_path, branch)
         git_manager.apply_patches(generated_codes)
         commit_sha = git_manager.commit_and_push(args.story_num)

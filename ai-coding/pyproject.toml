@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-coding"
+version = "1.0.0"
+description = "效能平台需求自动代码生成工具"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "AI Coding Team", email = "team@example.com"}
+]
+keywords = ["ai-coding", "efficiency-platform", "code-generation", "claude"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "gitpython>=3.1.0",
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+    "dashscope>=1.10.0",
+]
+
+[project.scripts]
+ai-coding = "cli:main"
+
+[project.urls]
+Homepage = "https://github.com/hujiahui0604/test"
+Repository = "https://github.com/hujiahui0604/test"
+Issues = "https://github.com/hujiahui0604/test/issues"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.setuptools.package-data]
+"*" = ["config.yaml", "README.md"]
