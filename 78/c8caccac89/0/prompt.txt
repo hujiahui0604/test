@@ -175,3 +175,7 @@ This may or may not be related to the current task.</ide_selection>
 ---
 
 你上面给出的例子是示例吗，可以通用吗
+
+---
+
+先同步到GitHub仓库
