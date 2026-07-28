@@ -1,9 +1,16 @@
-"""代码生成模块"""
+"""代码生成模块 - 支持多厂商 LLM"""
 import os
-import subprocess
+import requests
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
-from .task_splitter import SplitTask
+
+# 处理相对导入
+if __name__ != "__main__" and "." in __name__:
+    from .task_splitter import SplitTask
+    from .config import get_config
+else:
+    from task_splitter import SplitTask
+    from config import get_config
 
 
 @dataclass
@@ -20,9 +27,13 @@ class GeneratedCode:
 class CodeGenerator:
     """代码生成器"""
 
-    def __init__(self, repo_path: str):
+    def __init__(self, repo_path: str, config=None):
         self.repo_path = repo_path
-        self.anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        self.config = config or get_config()
+        # 获取当前厂商配置
+        self.provider = self.config.get_active_provider()
+        self.api_key = self.config.get_active_api_key()
+        self.model = self.config.get_active_model()
 
     def generate(self, task: SplitTask) -> GeneratedCode:
         """生成代码"""
@@ -45,7 +56,7 @@ class CodeGenerator:
         prompt = self._build_prompt(task, original_content)
         generated_patch = self._call_ai(prompt)
 
-        # 3. 应用补丁
+        # 3. 返回结果
         if generated_patch:
             return GeneratedCode(
                 task_id=task.task_id,
@@ -80,7 +91,7 @@ class CodeGenerator:
 {task.edit_description}
 
 ## 原文件内容
-```
+```{task.language if hasattr(task, 'language') else ''}
 {original_content}
 ```
 
@@ -95,28 +106,180 @@ class CodeGenerator:
 
     def _call_ai(self, prompt: str) -> str:
         """调用 AI 生成代码"""
-        if not self.anthropic_key:
-            # 如果没有 API Key，返回模拟结果
+        if not self.api_key:
+            print(f"警告: {self.provider} API Key 未配置，使用模拟结果")
             return self._generate_mock_patch()
 
+        # 根据厂商调用不同的 API
+        if self.provider == "anthropic":
+            return self._call_anthropic(prompt)
+        elif self.provider == "openai":
+            return self._call_openai(prompt)
+        elif self.provider == "ali":
+            return self._call_ali(prompt)
+        elif self.provider == "deepseek":
+            return self._call_deepseek(prompt)
+        elif self.provider == "kimi":
+            return self._call_kimi(prompt)
+        elif self.provider == "minmax":
+            return self._call_minmax(prompt)
+        elif self.provider == "glm":
+            return self._call_glm(prompt)
+        else:
+            print(f"未知厂商: {self.provider}，使用模拟结果")
+            return self._generate_mock_patch()
+
+    def _call_anthropic(self, prompt: str) -> str:
+        """调用 Anthropic Claude API"""
         try:
             import anthropic
-            client = anthropic.Anthropic(api_key=self.anthropic_key)
+            client = anthropic.Anthropic(api_key=self.api_key)
 
             response = client.messages.create(
-                model="claude-sonnet-4-6",
+                model=self.model,
                 max_tokens=4096,
                 messages=[{"role": "user", "content": prompt}]
             )
 
             return response.content[0].text
         except Exception as e:
-            print(f"AI 调用失败: {e}")
+            print(f"Anthropic API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_openai(self, prompt: str) -> str:
+        """调用 OpenAI API"""
+        try:
+            import openai
+            client = openai.OpenAI(api_key=self.api_key)
+
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=4096
+            )
+
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"OpenAI API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_ali(self, prompt: str) -> str:
+        """调用阿里通义千问 API"""
+        try:
+            import dashscope
+            dashscope.api_key = self.api_key
+
+            from dashscope import Generation
+            response = Generation.call(
+                model=self.model,
+                prompt=prompt,
+                max_tokens=4096
+            )
+
+            if response.status_code == 200:
+                return response.output.text
+            else:
+                print(f"阿里 API 调用失败: {response.code} - {response.message}")
+                return self._generate_mock_patch()
+        except Exception as e:
+            print(f"阿里 API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_deepseek(self, prompt: str) -> str:
+        """调用 DeepSeek API"""
+        try:
+            response = requests.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 4096
+                },
+                timeout=60
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"DeepSeek API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_kimi(self, prompt: str) -> str:
+        """调用 Kimi (月之暗面) API"""
+        try:
+            response = requests.post(
+                "https://api.moonshot.cn/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 4096
+                },
+                timeout=60
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"Kimi API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_minmax(self, prompt: str) -> str:
+        """调用 MiniMax API"""
+        try:
+            response = requests.post(
+                "https://api.minimax.chat/v1/text/chatcompletion_pro",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 4096
+                },
+                timeout=60
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"MiniMax API 调用失败: {e}")
+            return self._generate_mock_patch()
+
+    def _call_glm(self, prompt: str) -> str:
+        """调用智谱 GLM API"""
+        try:
+            response = requests.post(
+                "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 4096
+                },
+                timeout=60
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"GLM API 调用失败: {e}")
             return self._generate_mock_patch()
 
     def _generate_mock_patch(self) -> str:
         """生成模拟补丁（用于测试）"""
         return """
 // TODO: AI 生成的代码应该在这里
-// 当前为模拟结果
+// 当前为模拟结果（请配置 API Key 生效）
 """

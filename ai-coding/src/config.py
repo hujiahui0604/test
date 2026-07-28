@@ -31,10 +31,51 @@ class Config:
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
         return {
+            # 多厂商 LLM 配置
+            "providers": {
+                "anthropic": {
+                    "enabled": True,
+                    "api_key": os.environ.get("ANTHROPIC_API_KEY", ""),
+                    "model": "claude-sonnet-4-6"
+                },
+                "openai": {
+                    "enabled": False,
+                    "api_key": os.environ.get("OPENAI_API_KEY", ""),
+                    "model": "gpt-4o"
+                },
+                "ali": {
+                    "enabled": False,
+                    "api_key": os.environ.get("DASHSCOPE_API_KEY", ""),
+                    "model": "qwen-turbo"
+                },
+                "deepseek": {
+                    "enabled": False,
+                    "api_key": os.environ.get("DEEPSEEK_API_KEY", ""),
+                    "model": "deepseek-chat"
+                },
+                "kimi": {
+                    "enabled": False,
+                    "api_key": os.environ.get("MOONSHOT_API_KEY", ""),
+                    "model": "moonshot-v1-8k"
+                },
+                "minmax": {
+                    "enabled": False,
+                    "api_key": os.environ.get("MINMAX_API_KEY", ""),
+                    "model": "abab6.5s-chat"
+                },
+                "glm": {
+                    "enabled": False,
+                    "api_key": os.environ.get("ZHIPU_API_KEY", ""),
+                    "model": "glm-4"
+                }
+            },
+            "active_provider": "anthropic",
+            # MCP 配置
             "mcp": {
                 "access_key": os.environ.get("ACCESS_KEY", ""),
                 "base_url": "https://dev.hundsun.com/openapi/apis/v1/mcp"
             },
+            # 仓库配置
             "repositories": {},
             "task": {
                 "max_parallel": 3
@@ -74,6 +115,59 @@ class Config:
     def get_commit_template(self) -> str:
         """获取提交消息模板"""
         return self._config.get("git", {}).get("commit_template", "AI Coding: {需求编号} - {任务描述}")
+
+    def get_anthropic_api_key(self) -> str:
+        """获取 Anthropic API Key"""
+        key = self._config.get("anthropic", {}).get("api_key", "")
+        if key.startswith("${") and key.endswith("}"):
+            env_var = key[2:-1]
+            return os.environ.get(env_var, "")
+        return key
+
+    def get_anthropic_model(self) -> str:
+        """获取 Anthropic 模型"""
+        return self._config.get("anthropic", {}).get("model", "claude-sonnet-4-6")
+
+    # ===== 多厂商配置 =====
+
+    def get_active_provider(self) -> str:
+        """获取当前使用的厂商"""
+        return self._config.get("active_provider", "anthropic")
+
+    def get_provider_config(self, provider: str) -> Optional[Dict[str, Any]]:
+        """获取指定厂商的配置"""
+        providers = self._config.get("providers", {})
+        return providers.get(provider, {})
+
+    def get_active_provider_config(self) -> Optional[Dict[str, Any]]:
+        """获取当前厂商的完整配置"""
+        active = self.get_active_provider()
+        return self.get_provider_config(active)
+
+    def get_active_api_key(self) -> str:
+        """获取当前厂商的 API Key"""
+        config = self.get_active_provider_config()
+        if not config:
+            return ""
+
+        api_key = config.get("api_key", "")
+        # 从环境变量读取 ${VAR} 格式
+        if api_key.startswith("${") and api_key.endswith("}"):
+            env_var = api_key[2:-1]
+            return os.environ.get(env_var, "")
+        return api_key
+
+    def get_active_model(self) -> str:
+        """获取当前厂商的模型"""
+        config = self.get_active_provider_config()
+        if not config:
+            return ""
+        return config.get("model", "")
+
+    def is_provider_enabled(self, provider: str) -> bool:
+        """检查厂商是否启用"""
+        config = self.get_provider_config(provider)
+        return config.get("enabled", False) if config else False
 
 
 # 全局配置实例

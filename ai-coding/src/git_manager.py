@@ -3,8 +3,14 @@ import os
 import subprocess
 from typing import List, Dict, Any, Optional
 from pathlib import Path
-from .code_generator import GeneratedCode
-from .code_reviewer import ReviewResult
+
+# 处理相对导入
+if __name__ != "__main__" and "." in __name__:
+    from .code_generator import GeneratedCode
+    from .code_reviewer import ReviewResult
+else:
+    from code_generator import GeneratedCode
+    from code_reviewer import ReviewResult
 
 
 class GitManager:

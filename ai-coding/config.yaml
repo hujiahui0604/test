@@ -1,5 +1,52 @@
 # AI Coding 团队通用配置
 
+# 多厂商 LLM 配置
+providers:
+  # Anthropic (Claude)
+  anthropic:
+    enabled: true
+    api_key: "${ANTHROPIC_API_KEY}"
+    model: "claude-sonnet-4-6"
+
+  # OpenAI (GPT)
+  openai:
+    enabled: false
+    api_key: "${OPENAI_API_KEY}"
+    model: "gpt-4o"
+
+  # 阿里通义千问
+  ali:
+    enabled: false
+    api_key: "${DASHSCOPE_API_KEY}"
+    model: "qwen-turbo"
+
+  # DeepSeek
+  deepseek:
+    enabled: false
+    api_key: "${DEEPSEEK_API_KEY}"
+    model: "deepseek-chat"
+
+  # Kimi (月之暗面)
+  kimi:
+    enabled: false
+    api_key: "${MOONSHOT_API_KEY}"
+    model: "moonshot-v1-8k"
+
+  # MiniMax
+  minmax:
+    enabled: false
+    api_key: "${MINMAX_API_KEY}"
+    model: "abab6.5s-chat"
+
+  # 智谱GLM
+  glm:
+    enabled: false
+    api_key: "${ZHIPU_API_KEY}"
+    model: "glm-4"
+
+# 当前使用的厂商
+active_provider: "anthropic"
+
 # 效能平台 MCP 配置
 mcp:
   access_key: "${ACCESS_KEY}"

@@ -1,7 +1,12 @@
 """任务拆分模块"""
 from typing import List, Dict, Any
 from dataclasses import dataclass
-from .story_reader import Story, Task
+
+# 处理相对导入
+if __name__ != "__main__" and "." in __name__:
+    from .story_reader import Story, Task
+else:
+    from story_reader import Story, Task
 
 
 @dataclass

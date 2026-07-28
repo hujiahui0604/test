@@ -3,7 +3,12 @@ import os
 import anthropic
 from typing import Dict, Any, List
 from dataclasses import dataclass
-from .code_generator import GeneratedCode
+
+# 处理相对导入
+if __name__ != "__main__" and "." in __name__:
+    from .code_generator import GeneratedCode
+else:
+    from code_generator import GeneratedCode
 
 
 @dataclass
