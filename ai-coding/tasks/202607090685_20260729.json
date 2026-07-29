@@ -1,0 +1,25 @@
+{
+  "story_num": "202607090685",
+  "story_name": "EI接口-港股通指令端资金可用查询，增加出参风险金结算币可用、风险金交易币可用",
+  "product_no": "CP-S000128-3.2",
+  "created_at": "2026-07-29T15:30:00",
+  "tasks": [
+    {
+      "taskNums": "T202607290001",
+      "name": "[改进]港股通指令端资金可用查询增加出参",
+      "description": "EI接口-港股通指令端资金可用查询，功能号921445，增加出参 risk_trade_available（风险金交易币种可用）和 risk_settle_available（风险金结算币种可用）",
+      "reqNums": "202607090685",
+      "productId": "CP-S000128-3.2",
+      "moduleList": []
+    }
+  ],
+  "confirmed_fields": {
+    "versionNO": "",
+    "modifierNo": "",
+    "modifierName": "",
+    "projectNo": "",
+    "projectName": "",
+    "estimateWorkload": ""
+  },
+  "repo_path": "C:/Users/hspcadmin/Desktop/src"
+}
